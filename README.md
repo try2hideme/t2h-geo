@@ -32,10 +32,9 @@ latest release tag) and sets DNS. The rules themselves live in the xray JSON tem
 and `happ/t2h.deeplink` (`happ://routing/add/<base64>`) on every release. Replace `add` with `onadd` to also activate
 the profile right after adding. The current deeplink is the content of `happ/t2h.deeplink`.
 
-`tests/xray-template.json` is the reference xray template (rule order: block, direct, proxy, geoip direct, proxy-ip,
-bittorrent, final proxy). Note: because `regexp:.*\.ru$` sits in the direct rule that precedes `geosite:t2h-proxy`,
-`.ru` domains listed in `t2h-proxy` (e.g. novayagazeta.ru) still go direct in this order. Put the `t2h-proxy` rule
-before the direct rule if they must be proxied.
+`tests/xray-template.json` is the reference xray template. Rule order: block, **proxy (`t2h-proxy`) before direct** — so
+`.ru` domains in `t2h-proxy` (e.g. novayagazeta.ru) and services also present in broad direct includes (e.g. GitHub vs `microsoft`)
+are proxied — then direct domains, geoip direct, proxy-ip, bittorrent, final proxy.
 
 ## How the build works
 

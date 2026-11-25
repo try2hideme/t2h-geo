@@ -1,11 +1,18 @@
 {
-  "log": { "loglevel": "warning" },
+  "log": {
+    "loglevel": "warning"
+  },
   "dns": {
     "servers": [
       {
         "address": "https+local://77.88.8.8/dns-query",
-        "domains": ["geosite:category-ru", "geosite:t2h-direct"],
-        "expectedIPs": ["geoip:direct"],
+        "domains": [
+          "geosite:category-ru",
+          "geosite:t2h-direct"
+        ],
+        "expectedIPs": [
+          "geoip:direct"
+        ],
         "skipFallback": true
       },
       "https://8.8.8.8/dns-query",
@@ -17,17 +24,50 @@
     }
   },
   "inbounds": [
-    { "tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": { "udp": true } }
+    {
+      "tag": "socks-in",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "udp": true
+      }
+    }
   ],
   "outbounds": [
-    { "tag": "proxy", "protocol": "freedom", "settings": {} },
-    { "tag": "direct", "protocol": "freedom", "settings": {} },
-    { "tag": "block", "protocol": "blackhole", "settings": {} }
+    {
+      "tag": "proxy",
+      "protocol": "freedom",
+      "settings": {}
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {}
+    }
   ],
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
-      { "type": "field", "domain": ["geosite:t2h-block"], "outboundTag": "block" },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:t2h-block"
+        ],
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:t2h-proxy"
+        ],
+        "outboundTag": "proxy"
+      },
       {
         "type": "field",
         "domain": [
@@ -39,11 +79,34 @@
         ],
         "outboundTag": "direct"
       },
-      { "type": "field", "domain": ["geosite:t2h-proxy"], "outboundTag": "proxy" },
-      { "type": "field", "ip": ["geoip:direct", "geoip:private", "geoip:t2h-direct-extra"], "outboundTag": "direct" },
-      { "type": "field", "ip": ["geoip:t2h-proxy-ip"], "outboundTag": "proxy" },
-      { "type": "field", "protocol": ["bittorrent"], "outboundTag": "direct" },
-      { "type": "field", "network": "tcp,udp", "outboundTag": "proxy" }
+      {
+        "type": "field",
+        "ip": [
+          "geoip:direct",
+          "geoip:private",
+          "geoip:t2h-direct-extra"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:t2h-proxy-ip"
+        ],
+        "outboundTag": "proxy"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "outboundTag": "proxy"
+      }
     ]
   }
 }
