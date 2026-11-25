@@ -1,0 +1,106 @@
+name: Build geo
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Release even if the dat files did not change"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "20 3 * * *"
+  push:
+    branches: [main]
+    paths-ignore:
+      - "release/**"
+      - "happ/**"
+      - "README.md"
+      - ".gitignore"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-geo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install pinned xray and sing-box
+        run: |
+          set -euo pipefail
+          . versions.env
+          mkdir -p "$HOME/bin"
+          curl -fsSL --retry 3 -o /tmp/xray.zip "https://github.com/XTLS/Xray-core/releases/download/${XRAY_VERSION}/Xray-linux-64.zip"
+          unzip -oq /tmp/xray.zip xray -d "$HOME/bin"
+          curl -fsSL --retry 3 -o /tmp/sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${SINGBOX_VERSION}/sing-box-${SINGBOX_VERSION}-linux-amd64.tar.gz"
+          tar -xzf /tmp/sb.tgz -C /tmp
+          install -m755 "/tmp/sing-box-${SINGBOX_VERSION}-linux-amd64/sing-box" "$HOME/bin/sing-box"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Build
+        run: ./scripts/build.sh
+
+      - name: Check (categories, size drop, xray -test, sing-box check)
+        run: PREV_STATS=release/stats.json ./scripts/check.sh
+
+      - name: Changed since last release?
+        id: changed
+        run: |
+          set -euo pipefail
+          changed=false
+          for f in geosite.dat geoip.dat; do
+            new=$(cut -d' ' -f1 "out/$f.sha256")
+            old=$(cut -d' ' -f1 "release/$f.sha256" 2>/dev/null || true)
+            [ "$new" = "$old" ] || changed=true
+          done
+          if [ "${{ inputs.force }}" = "true" ]; then changed=true; fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "changed=$changed"
+
+      - name: Commit release/ and Happ profile
+        if: steps.changed.outputs.changed == 'true'
+        id: commit
+        run: |
+          set -euo pipefail
+          TAG=$(date -u +%Y%m%d%H%M)
+          rm -rf release; mkdir -p release
+          cp -a out/geosite.dat out/geosite.dat.sha256 out/geoip.dat out/geoip.dat.sha256 out/stats.json out/sing-box release/
+          ./scripts/happ.sh "${{ github.repository }}" "$TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add release happ
+          git commit -m "Release $TAG"
+          git push origin HEAD:main
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        if: steps.changed.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.commit.outputs.tag }}
+        run: |
+          set -euo pipefail
+          tar -czf out/sing-box.tar.gz -C out sing-box
+          jq -r '"Upstream roscomvpn tags used:\ngeosite: " + .upstream.geosite + "\ngeoip: " + .upstream.geoip' out/stats.json > notes.txt
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "$TAG" --notes-file notes.txt \
+            out/geosite.dat out/geosite.dat.sha256 out/geoip.dat out/geoip.dat.sha256 out/stats.json out/sing-box.tar.gz
+
+      - name: Warm jsDelivr (non-fatal)
+        if: steps.changed.outputs.changed == 'true'
+        env:
+          TAG: ${{ steps.commit.outputs.tag }}
+        run: |
+          for f in geosite.dat geoip.dat; do
+            curl -fsSI --retry 5 --retry-delay 10 --retry-all-errors \
+              "https://cdn.jsdelivr.net/gh/${{ github.repository }}@${TAG}/release/$f" | head -1 || true
+          done

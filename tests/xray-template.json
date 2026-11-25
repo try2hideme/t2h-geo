@@ -1,0 +1,49 @@
+{
+  "log": { "loglevel": "warning" },
+  "dns": {
+    "servers": [
+      {
+        "address": "https+local://77.88.8.8/dns-query",
+        "domains": ["geosite:category-ru", "geosite:t2h-direct"],
+        "expectedIPs": ["geoip:direct"],
+        "skipFallback": true
+      },
+      "https://8.8.8.8/dns-query",
+      "https://1.1.1.1/dns-query"
+    ],
+    "hosts": {
+      "lkfl2.nalog.ru": "213.24.64.175",
+      "lknpd.nalog.ru": "213.24.64.181"
+    }
+  },
+  "inbounds": [
+    { "tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": { "udp": true } }
+  ],
+  "outbounds": [
+    { "tag": "proxy", "protocol": "freedom", "settings": {} },
+    { "tag": "direct", "protocol": "freedom", "settings": {} },
+    { "tag": "block", "protocol": "blackhole", "settings": {} }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      { "type": "field", "domain": ["geosite:t2h-block"], "outboundTag": "block" },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:t2h-direct",
+          "geosite:category-ru",
+          "regexp:.*\\.ru$",
+          "regexp:.*\\.su$",
+          "regexp:.*\\.xn--p1ai$"
+        ],
+        "outboundTag": "direct"
+      },
+      { "type": "field", "domain": ["geosite:t2h-proxy"], "outboundTag": "proxy" },
+      { "type": "field", "ip": ["geoip:direct", "geoip:private", "geoip:t2h-direct-extra"], "outboundTag": "direct" },
+      { "type": "field", "ip": ["geoip:t2h-proxy-ip"], "outboundTag": "proxy" },
+      { "type": "field", "protocol": ["bittorrent"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "outboundTag": "proxy" }
+    ]
+  }
+}

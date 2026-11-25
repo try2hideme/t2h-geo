@@ -1,0 +1,3 @@
+# t2h-lte-whitelist: domains from Russian mobile-operator whitelists.
+# Taken from upstream roscomvpn 'whitelist' category.
+include:whitelist

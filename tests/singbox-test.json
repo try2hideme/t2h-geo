@@ -1,0 +1,25 @@
+{
+  "log": { "level": "warn" },
+  "inbounds": [ { "type": "mixed", "tag": "in", "listen": "127.0.0.1", "listen_port": 10809 } ],
+  "outbounds": [
+    { "type": "direct", "tag": "direct" },
+    { "type": "direct", "tag": "proxy" }
+  ],
+  "route": {
+    "rule_set": [
+      { "type": "local", "tag": "geosite-t2h-block", "format": "binary", "path": "RULESETS/geosite-t2h-block.srs" },
+      { "type": "local", "tag": "geosite-t2h-direct", "format": "binary", "path": "RULESETS/geosite-t2h-direct.srs" },
+      { "type": "local", "tag": "geosite-category-ru", "format": "binary", "path": "RULESETS/geosite-category-ru.srs" },
+      { "type": "local", "tag": "geosite-t2h-proxy", "format": "binary", "path": "RULESETS/geosite-t2h-proxy.srs" },
+      { "type": "local", "tag": "geosite-t2h-lte-whitelist", "format": "binary", "path": "RULESETS/geosite-t2h-lte-whitelist.srs" },
+      { "type": "local", "tag": "geoip-direct", "format": "binary", "path": "RULESETS/geoip-direct.srs" }
+    ],
+    "rules": [
+      { "rule_set": ["geosite-t2h-block"], "action": "reject" },
+      { "rule_set": ["geosite-t2h-direct", "geosite-category-ru"], "outbound": "direct" },
+      { "rule_set": ["geosite-t2h-proxy"], "outbound": "proxy" },
+      { "rule_set": ["geoip-direct"], "outbound": "direct" }
+    ],
+    "final": "proxy"
+  }
+}
