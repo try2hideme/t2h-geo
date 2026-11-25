@@ -1,0 +1,43 @@
+{
+  "upstream": {
+    "geosite": "202610120948",
+    "geoip": "202611251245"
+  },
+  "geosite": {
+    "apple": 92,
+    "category-ads": 2,
+    "category-geoblock-ru": 881,
+    "category-ru": 60,
+    "epicgames": 27,
+    "escapefromtarkov": 4,
+    "faceit": 2,
+    "github": 28,
+    "google-deepmind": 41,
+    "google-play": 29,
+    "microsoft": 66,
+    "origin": 153,
+    "pinterest": 50,
+    "private": 130,
+    "push": 17,
+    "riot": 54,
+    "steam": 40,
+    "t2h-block": 741,
+    "t2h-direct": 1134,
+    "t2h-lte-whitelist": 465,
+    "t2h-proxy": 261,
+    "telegram": 26,
+    "torrent": 418,
+    "twitch": 40,
+    "twitch-ads": 5,
+    "whitelist": 465,
+    "win-spy": 323,
+    "youtube": 177
+  },
+  "geoip": {
+    "direct": 37015,
+    "private": 27,
+    "t2h-direct-extra": 1,
+    "t2h-proxy-ip": 11,
+    "whitelist": 6710
+  }
+}
