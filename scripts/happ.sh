@@ -24,7 +24,7 @@ jq -n --arg ip "$BASE/geoip.dat" --arg site "$BASE/geosite.dat" --arg ts "$(date
   RouteOrder: "block-proxy-direct",
   DirectSites: [], DirectIp: [], ProxySites: [], ProxyIp: [], BlockSites: [], BlockIp: [],
   DomainStrategy: "IPIfNonMatch",
-  FakeDNS: "false"
+  FakeDNS: "true"
 }' > "$ROOT/happ/t2h.json"
 printf 'happ://routing/add/%s' "$(jq -c . "$ROOT/happ/t2h.json" | base64 -w0)" > "$ROOT/happ/t2h.deeplink"
 echo "happ profile -> tag $TAG"
