@@ -1,7 +1,7 @@
 {
   "upstream": {
     "geosite": "202610120948",
-    "geoip": "202611251245"
+    "geoip": "202611261221"
   },
   "geosite": {
     "apple": 92,
@@ -34,7 +34,7 @@
     "youtube": 177
   },
   "geoip": {
-    "direct": 37015,
+    "direct": 36989,
     "private": 27,
     "t2h-direct-extra": 1,
     "t2h-proxy-ip": 11,
